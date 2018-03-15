@@ -179,7 +179,7 @@ controlGain<- function(dat, label='', tunit='units', x1=NULL, y1=NULL, x2=NULL, 
   av<- format(av, digits=2)
   colnames(av)[c(2:5)]<- c('df', 'Sum of squares', 'Mean square', 'F-value')
 
-  out<- list(p1=p1, p2=p2, rslts=rslts, av=av, r2)
+  out<- list(p1=p1, p2=p2, rslts=rslts, av=av)
   return(out)
 }
 
