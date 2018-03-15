@@ -168,8 +168,10 @@ controlGain<- function(dat, label='', tunit='units', x1=NULL, y1=NULL, x2=NULL, 
     paste('Agronomic trend,', tunit, "per season number", sep=" "),
     paste('Genetic trend,', tunit, "per season number", sep=" ")), rslts)
   row.names(rslts)<- c(1:4)
-  colnames(rslts)[3:4]<- c("Standard_Error", 't-value')
-  rslts<- format(rslts, digits=2)
+  rslts<- data.frame(rslts, pvalue=c("", "", "", format(pest, digits=2, scientific=TRUE)))
+  colnames(rslts)[3:5]<- c("Standard_Error", 't-value', 'p-value')
+  rslts<-format(rslts, digits=2)
+
 
   #make anova table into a dataframe
   av<- as.data.frame(anova(mod1))
