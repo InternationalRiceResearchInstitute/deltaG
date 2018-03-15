@@ -66,58 +66,51 @@ controlGain<- function(dat, label='', tunit='units', x1=NULL, y1=NULL, x2=NULL, 
   cks<- names(tbsel)
 
   #add the check indicator column
-  dat<- data.frame(dat, ISCK=FALSE)
-  dat[which(dat$gid %in% cks),'ISCK']<- TRUE
-  dat$ISCK<- factor(dat$ISCK, levels=c('TRUE', 'FALSE'))
+  dat<- data.frame(dat, Population='Selected', stringsAsFactors = FALSE)
+  dat[which(dat$gid %in% cks),'Population']<- 'Control'
+  dat$Population<- factor(dat$Population, levels=c('Control', 'Selected'))
 
-  #run the analysis
+  #start time at 0
   mnsea<- min(dat$season_number)
   dat$season_number<- dat$season_number-mnsea
-  wt<- 1/(dat$se/max(dat$se))
-  dat<- data.frame(dat, seafac=as.character(dat$season_number))
-  if(var(wt)>0){
-    mod0<- lmer(blue~ (1|seafac)+ISCK+season_number, weight=wt, data=dat)
-    mod1<- lmer(blue~ (1|seafac)+ISCK+season_number+ISCK:season_number, weight=wt, data=dat)
-  }else{
-    mod0<- lmer(blue~ (1|seafac)+ISCK+season_number, data=dat)
-    mod1<- lmer(blue~ (1|seafac)+ISCK+season_number+ISCK:season_number, data=dat)
-  }
 
-
-  #Get the fitted values
-  lsm<- lsmeans::lsmeans(mod1, specs='season_number', by='ISCK', cov.reduce=FALSE)
-  fitted<- as.data.frame(summary(lsm))
-  colnames(fitted)[c(3:4)]<- c('blue', 'se')
-
-  #Get the contrast means (predicted genetic trend)
-  lsm<- lsmeans::lsmeans(mod1, specs='ISCK', by='season_number', cov.reduce=FALSE)
+  #fit model to get points for genetic value (stage 1)
+  dat$season_number<- as.character(dat$season_number)
+  wtMod0<- 1/(dat$se/max(dat$se))
+  mod0<- lm(blue~ Population+season_number+Population:season_number, weights=wtMod0, data=dat)
+  lsm<- lsmeans::lsmeans(mod0, specs='Population', by='season_number', cov.reduce=FALSE)
   lsm<- lsmeans::contrast(lsm, method='trt.vs.ctrl')
-  genEst<- data.frame(summary(lsm))
+  pts<- as.data.frame(summary(lsm))
 
+  #genetic trend model and fitted values (stage 2)
+  pts$season_number<- as.numeric(as.character(pts$season_number))
+  wt<- 1/(pts$SE/max(pts$SE))
+  mdG<-lm(estimate~season_number, weights=wt, data=pts)
+  lsm<- lsmeans::lsmeans(mdG, specs='season_number', cov.reduce=FALSE)
+  genEst<- as.data.frame(summary(lsm))
+  pts$season_number<-pts$season_number+mnsea #Gen-val tab
 
-  #phenotypic and agronomic trends
-  dat$season_number<- dat$season_number+mnsea
+  #get the points for the other plots (stage 1)
+  lsm<- lsmeans::lsmeans(mod0, specs='season_number', by='Population', cov.reduce=FALSE)
+  ptsPop<- as.data.frame(summary(lsm))
+
+  #Phenotypic trends (stage 2)
+  ptsPop$season_number<- as.numeric(as.character(ptsPop$season_number))
+  wt<- 1/(ptsPop$SE/max(ptsPop$SE))
+  mdPS<-lm(lsmean~season_number+Population+Population:season_number, data=ptsPop, weights=wt)
+  lsm<- lsmeans::lsmeans(mdPS, specs='Population', by='season_number' ,cov.reduce=FALSE)
+  fitted<- as.data.frame(summary(lsm))
+  ptsPop$season_number<- ptsPop$season_number+mnsea
   fitted$season_number<- fitted$season_number+mnsea
-  dat<- data.frame(dat, group2=paste(dat$ISCK, dat$season_number))
-
-  #Change labeling of populations
-  colnames(dat)[5]<- 'Population'
-  dat$Population<- as.character(dat$Population)
-  dat[which(dat$Population==TRUE),'Population']<- "Control"
-  dat[which(dat$Population==FALSE),'Population']<- "Selected"
-  colnames(fitted)[2]<- 'Population'
-  fitted$Population<- as.character(fitted$Population)
-  fitted[which(fitted$Population==TRUE),'Population']<- "Control"
-  fitted[which(fitted$Population==FALSE),'Population']<- "Selected"
 
   #create the phenotypic trend plot
-  p1<- ggplot(data=dat, aes(x=season_number, y=blue, group=Population)) +
-    #geom_jitter(alpha=0.5, width=0.25, aes(color=Population, shape=Population))+
-    stat_summary(fun.data="mean_sdl",  fun.args = list(mult=1),
-                 geom="crossbar", width=0.4, size=0.7, aes(color=Population))+
-    scale_shape_manual(values=c(1, 0))+
+  dat$season_number<- as.numeric(dat$season_number)+mnsea
+  p1<- ggplot(data=ptsPop, aes(x=season_number, y=lsmean, group=Population)) +
     theme_minimal()+
+    geom_point(size=2,stroke=1,aes(shape=Population, color=Population))+
     scale_color_manual(values=c('slategray4', 'darkorange'))+
+    scale_shape_manual(values=c(0, 1))+
+    geom_errorbar(size=1, aes(ymin=lsmean-SE, ymax=lsmean+SE, width=0.2, color=Population))+
     geom_line(data=fitted, size=0.5, aes(linetype=Population,  color=Population))+
     scale_linetype_manual(values=c("longdash", "twodash"))+
     geom_ribbon(data=fitted, aes(ymin=lower.CL, ymax=upper.CL, fill=Population), alpha=0.2)+
@@ -129,61 +122,56 @@ controlGain<- function(dat, label='', tunit='units', x1=NULL, y1=NULL, x2=NULL, 
   if(!is.null(x1) & !is.null(y1))
     p1<- p1+ylim(x=x1, y=y1)
 
-
-  #fit model to get points for genetic value plot
-  dat$season_number<- as.character(dat$season_number)
-  mod2<- lm(blue~ Population+season_number+Population:season_number, data=dat)
-  lsm<- lsmeans::lsmeans(mod2, specs='Population', by='season_number', cov.reduce=FALSE)
-  lsm<- lsmeans::contrast(lsm, method='trt.vs.ctrl')
-  pts<- as.data.frame(summary(lsm))
-  pts$season_number<- as.numeric(pts$season_number)+mnsea
-
   #create the genetic trend plot
   #geom_point(color='slategray4', size=2, shape=0)+geom_line(color='black')+
   genEst$season_number<- genEst$season_number+mnsea
-  pts$SE<- pts$SE*2
-  p2<- ggplot(genEst,aes(x=season_number,y=estimate)) +
-    geom_point(shape=1, size=4.75,stroke=1, color='slategray4', data=pts, aes(x=season_number,y=estimate))+
-    geom_line(color='slategray4', linetype='longdash')+
-    geom_errorbar(color='slategray4', data=pts, size=1.15, aes(ymin=estimate-SE, ymax=estimate+SE, width=0.0))+
+  colnames(pts)[3]<- 'lsmean'
+  p2<- ggplot(pts,aes(x=season_number, y=lsmean)) +
+    geom_point(shape=1, size=2,stroke=1, color='slategray4', data=pts, aes(x=season_number,y=lsmean))+
+    geom_line(data=genEst, color='slategray4', linetype='longdash')+
+    geom_errorbar(color='slategray4', data=pts, size=1, aes(ymin=lsmean-SE, ymax=lsmean+SE, width=0.2))+
     theme_minimal()+
-    geom_ribbon(aes(ymin=estimate-SE, ymax=estimate+SE), fill='slategray4', alpha=0.2)+
+    geom_ribbon(data=genEst, aes(ymin=lsmean-SE, ymax=lsmean+SE), fill='slategray4', alpha=0.2)+
     labs(y = paste("Predicted average genetic value in", tunit,sep=" "), x='Season number')+
     ggtitle(paste("Predicted genetic trend", label, sep=""))+
     theme(plot.title = element_text(hjust = 0.5))
-
   if(!is.null(x2) & !is.null(y2))
     p2<- p2+ylim(x=x2, y=y2)
 
   #get the model information
-  modcomp<- anova(mod0, mod1)
-  pest<- modcomp$`Pr(>Chisq)`[2]
-  cfs<- fixef(mod1)
-  secoef<- summary(mod1)$coefficients[,2]
+  genTab<- as.data.frame(summary(mdG)$coefficients)
+  psTab<- as.data.frame(summary(mdPS)$coefficients)
 
-  #Get the genetic trend estimate
-  RateEst<- cfs['ISCKFALSE:season_number']
-  seEst<- secoef[4]
-
-  #make results summary table
-  rslts<- summary(mod1)$coefficients
-  rslts<- data.frame(Parameter=c(paste('Control phenotypic baseline in', tunit, sep=" "),
-    paste('Genetic value baseline in', tunit, sep=" "),
-    paste('Agronomic trend,', tunit, "per season number", sep=" "),
-    paste('Genetic trend,', tunit, "per season number", sep=" ")), rslts)
-  row.names(rslts)<- c(1:4)
-  rslts<- data.frame(rslts, pvalue=c("", "", "", format(pest, digits=2, scientific=TRUE)))
-  colnames(rslts)[3:5]<- c("Standard_Error", 't-value', 'p-value')
+  cfnms<-c(paste('Control baseline in', tunit, sep=" "),
+                paste('Control trend in', tunit, "per season number", sep=" "),
+                paste('Selected baseline in', tunit, sep=" "),
+                paste('Phenotypic-agronomic trend in', tunit, "per season number", sep=" "),
+                paste('Genetic value baseline in', tunit, sep=" "),
+                paste('Genetic trend in,', tunit, "per season number", sep=" "))
+  rslts<- data.frame(cfnms, Model=c(rep('P',4),
+             rep('G',2)),rbind(psTab, genTab))
+  row.names(rslts)<- c(1:nrow(rslts))
+  colnames(rslts)<- c("Parameter", "Model", "Estimate", "Standard error",
+    't-value', 'p-value')
   rslts<-format(rslts, digits=2)
 
 
   #make anova table into a dataframe
-  av<- as.data.frame(anova(mod1))
-  av<- data.frame(Parameter=c('Population',
-  'Season number','Season number x population'), av)
-  row.names(av)<- c(1:3)
+  avP<- as.data.frame(anova(mdPS))
+  avG<- as.data.frame(anova(mdG))
+  varnms<- c('Season number', 'Population', 'Season number x population',
+             'Residuals', 'Season number', 'Residuals')
+
+  av<- data.frame(Model=c(rep('P',4),rep('G',2)), varnms, rbind(avP, avG))
+  row.names(av)<- c(1:nrow(av))
   av<- format(av, digits=2)
-  colnames(av)[c(2:5)]<- c('df', 'Sum of squares', 'Mean square', 'F-value')
+  av[which(trimws(av[,6])=='NA'),6]<-""
+  av[which(trimws(av[,7])=='NA'),7]<-""
+
+  which(is.na(trimws(av[,6])))
+  colnames(av)<- c('Model', 'Variable', 'df',
+                   'Sum of squares', 'Mean square',
+                   'F-value', 'p-value')
 
   out<- list(p1=p1, p2=p2, rslts=rslts, av=av)
   return(out)
