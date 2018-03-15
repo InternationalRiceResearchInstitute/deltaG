@@ -82,14 +82,7 @@ controlGain<- function(dat, label='', tunit='units', x1=NULL, y1=NULL, x2=NULL, 
     mod0<- lmer(blue~ (1|seafac)+ISCK+season_number, data=dat)
     mod1<- lmer(blue~ (1|seafac)+ISCK+season_number+ISCK:season_number, data=dat)
   }
-  modcomp<- anova(mod0, mod1)
-  pest<- modcomp$`Pr(>Chisq)`[2]
-  cfs<- fixef(mod1)
-  secoef<- summary(mod1)$coefficients[,2]
 
-  #Get the genetic trend estimate
-  RateEst<- cfs['ISCKFALSE:season_number']
-  seEst<- secoef[4]
 
   #Get the fitted values
   lsm<- lsmeans::lsmeans(mod1, specs='season_number', by='ISCK', cov.reduce=FALSE)
@@ -100,6 +93,7 @@ controlGain<- function(dat, label='', tunit='units', x1=NULL, y1=NULL, x2=NULL, 
   lsm<- lsmeans::lsmeans(mod1, specs='ISCK', by='season_number', cov.reduce=FALSE)
   lsm<- lsmeans::contrast(lsm, method='trt.vs.ctrl')
   genEst<- data.frame(summary(lsm))
+
 
   #phenotypic and agronomic trends
   dat$season_number<- dat$season_number+mnsea
@@ -160,6 +154,16 @@ controlGain<- function(dat, label='', tunit='units', x1=NULL, y1=NULL, x2=NULL, 
 
   if(!is.null(x2) & !is.null(y2))
     p2<- p2+ylim(x=x2, y=y2)
+
+  #get the model information
+  modcomp<- anova(mod0, mod1)
+  pest<- modcomp$`Pr(>Chisq)`[2]
+  cfs<- fixef(mod1)
+  secoef<- summary(mod1)$coefficients[,2]
+
+  #Get the genetic trend estimate
+  RateEst<- cfs['ISCKFALSE:season_number']
+  seEst<- secoef[4]
 
   #make results summary table
   rslts<- summary(mod1)$coefficients
