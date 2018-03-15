@@ -2,6 +2,7 @@
 #'
 #' @import ggplot2
 #' @import grid
+#' @import lme4
 #' @import lsmeans
 #' @param filenm a csv file name string
 #' @param label a character with the plot label appendage
@@ -73,26 +74,30 @@ controlGain<- function(dat, label='', tunit='units', x1=NULL, y1=NULL, x2=NULL, 
   mnsea<- min(dat$season_number)
   dat$season_number<- dat$season_number-mnsea
   wt<- 1/(dat$se/max(dat$se))
+  dat<- data.frame(dat, seafac=as.character(dat$season_number))
   if(var(wt)>0){
-    mod<- lm(blue~ ISCK+season_number+ISCK:season_number, weight=wt, data=dat)
+    mod0<- lmer(blue~ (1|seafac)+ISCK+season_number, weight=wt, data=dat)
+    mod1<- lmer(blue~ (1|seafac)+ISCK+season_number+ISCK:season_number, weight=wt, data=dat)
   }else{
-    mod<- lm(blue~ ISCK+season_number+ISCK:season_number, data=dat)
+    mod0<- lmer(blue~ (1|seafac)+ISCK+season_number, data=dat)
+    mod1<- lmer(blue~ (1|seafac)+ISCK+season_number+ISCK:season_number, data=dat)
   }
-  cfs<- coefficients(mod)
-  secoef<- sqrt(diag(vcov(mod)))
+  modcomp<- anova(mod0, mod1)
+  pest<- modcomp$`Pr(>Chisq)`[2]
+  cfs<- fixef(mod1)
+  secoef<- summary(mod1)$coefficients[,2]
 
   #Get the genetic trend estimate
-  RateEst<- coefficients(mod)['ISCKFALSE:season_number']
-  pest<- summary(mod)$coefficients[,4]['ISCKFALSE:season_number']
-  seEst<- summary(mod)$coefficients[,2]['ISCKFALSE:season_number']
+  RateEst<- cfs['ISCKFALSE:season_number']
+  seEst<- secoef[4]
 
   #Get the fitted values
-  lsm<- lsmeans::lsmeans(mod, specs='season_number', by='ISCK', cov.reduce=FALSE)
+  lsm<- lsmeans::lsmeans(mod1, specs='season_number', by='ISCK', cov.reduce=FALSE)
   fitted<- as.data.frame(summary(lsm))
   colnames(fitted)[c(3:4)]<- c('blue', 'se')
 
   #Get the contrast means (predicted genetic trend)
-  lsm<- lsmeans::lsmeans(mod, specs='ISCK', by='season_number', cov.reduce=FALSE)
+  lsm<- lsmeans::lsmeans(mod1, specs='ISCK', by='season_number', cov.reduce=FALSE)
   lsm<- lsmeans::contrast(lsm, method='trt.vs.ctrl')
   genEst<- data.frame(summary(lsm))
 
@@ -157,32 +162,24 @@ controlGain<- function(dat, label='', tunit='units', x1=NULL, y1=NULL, x2=NULL, 
     p2<- p2+ylim(x=x2, y=y2)
 
   #make results summary table
-  rslts<- summary(mod)$coefficients
+  rslts<- summary(mod1)$coefficients
   rslts<- data.frame(Parameter=c(paste('Control phenotypic baseline in', tunit, sep=" "),
     paste('Genetic value baseline in', tunit, sep=" "),
     paste('Agronomic trend,', tunit, "per season number", sep=" "),
     paste('Genetic trend,', tunit, "per season number", sep=" ")), rslts)
   row.names(rslts)<- c(1:4)
-  colnames(rslts)[3:5]<- c("Standard_Error", 't-value', 'p-value')
+  colnames(rslts)[3:4]<- c("Standard_Error", 't-value')
   rslts<- format(rslts, digits=2)
 
   #make anova table into a dataframe
-  av<- as.data.frame(anova(mod))
+  av<- as.data.frame(anova(mod1))
   av<- data.frame(Parameter=c('Population',
-  'Season number','Season number x population','Residuals'), av)
-  row.names(av)<- c(1:4)
+  'Season number','Season number x population'), av)
+  row.names(av)<- c(1:3)
   av<- format(av, digits=2)
-  colnames(av)[c(2:6)]<- c('df', 'Sum of squares', 'Mean square', 'F-value', 'p-value')
+  colnames(av)[c(2:5)]<- c('df', 'Sum of squares', 'Mean square', 'F-value')
 
-  #show the r-squared of the model
-  r2<- round(summary(mod)$r.sq,2)
-  r2<- data.frame(`R squared`=r2)
-
-  #edit text in anova table
-  av[nrow(av),'F-value']<- ""
-  av[nrow(av),'p-value']<- ""
-
-  out<- list(p1=p1, p2=p2, rslts=rslts, av=av, r2=r2)
+  out<- list(p1=p1, p2=p2, rslts=rslts, av=av, r2)
   return(out)
 }
 
