@@ -147,9 +147,9 @@ controlGain<- function(dat, label='', tunit='units', x1=NULL, y1=NULL, x2=NULL, 
                 paste('Selected baseline in', tunit, sep=" "),
                 paste('Phenotypic-agronomic trend in', tunit, "per season number", sep=" "),
                 paste('Genetic value baseline in', tunit, sep=" "),
-                paste('Genetic trend in,', tunit, "per season number", sep=" "))
-  rslts<- data.frame(cfnms, Model=c(rep('P',4),
-             rep('G',2)),rbind(psTab, genTab))
+                paste('Genetic trend in', tunit, "per season number", sep=" "))
+  rslts<- data.frame(Model=c(rep('P',4),
+             rep('G',2)),cfnms, rbind(psTab, genTab))
   row.names(rslts)<- c(1:nrow(rslts))
   colnames(rslts)<- c("Parameter", "Model", "Estimate", "Standard error",
     't-value', 'p-value')
