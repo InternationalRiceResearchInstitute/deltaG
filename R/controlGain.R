@@ -1,4 +1,4 @@
-#' controlGain function estimate phenotypic, agronomic, and genetic trends using the control pop method 
+#' controlGain function estimate phenotypic, agronomic, and genetic trends using the control pop method
 #'
 #' @import ggplot2
 #' @import grid
@@ -14,10 +14,9 @@
 #' @export
 #'
 
-controlGain<- function(filenm, label='', tunit='units', x1=NULL, y1=NULL, x2=NULL, y2=NULL){
-  dat<- read.csv(filenm)
+controlGain<- function(dat, label='', tunit='units', x1=NULL, y1=NULL, x2=NULL, y2=NULL){
   #Check the column names
-  if(any(colnames(dat)!= c("gid", "blue","se","season_number"))) 
+  if(any(colnames(dat)!= c("gid", "blue","se","season_number")))
     stop("data should contain gid, blue, se, and season_number columns")
   dat$gid<- as.character(dat$gid)
   dat$season_number<- as.numeric(dat$season_number)
@@ -26,13 +25,13 @@ controlGain<- function(filenm, label='', tunit='units', x1=NULL, y1=NULL, x2=NUL
 
   #check the dataset for duplicate gids within a season
   id_sea<- paste(dat$gid, dat$season_number)
-  if(!length(unique(id_sea))==length(id_sea)) 
+  if(!length(unique(id_sea))==length(id_sea))
     stop("Error: There should be only one value per genotype per season number")
 
-  #identify which are the potential checks 
+  #identify which are the potential checks
   tb<- table(dat$gid)
   ckcand<- tb[which(tb>=10)] #checks should be in at least 10 years
-  if(length(ckcand)==0) 
+  if(length(ckcand)==0)
     stop("Error: There are no checks in the dataset that have been used for 10+ years")
   ckcand<- names(ckcand)
 
@@ -41,14 +40,19 @@ controlGain<- function(filenm, label='', tunit='units', x1=NULL, y1=NULL, x2=NUL
   octab<- reshape::cast(dck, gid~season_number, value='blue')
   octab2<- octab[,-1]
   tally<- apply(octab2, 2, function(x)length(na.omit(x)))
-  start_num<- max(which(tally<3))+1
+  colrm<- which(tally<3)
+  if(length(colrm)!=0){
+    start_num<- max(which(tally<3))+1
+  }else{
+    start_num<- 1
+  }
 
   if(start_num>ncol(octab2))
     stop("Error: There needs to be at least common 3 checks used for the past 10 seasons (minimum)")
   sea_sel<- colnames(octab2)[start_num:ncol(octab2)]
   nsea<- length(sea_sel)
 
-  if(nsea<10) 
+  if(nsea<10)
     stop("Error: There needs to be at least common 3 checks used for the past 10 seasons (minimum)")
 
   #select the seasons with sufficent checks for the analysis
@@ -79,10 +83,10 @@ controlGain<- function(filenm, label='', tunit='units', x1=NULL, y1=NULL, x2=NUL
 
   #Get the genetic trend estimate
   RateEst<- coefficients(mod)['ISCKFALSE:season_number']
-  pest<- summary(mod)$coefficients[,4]['ISCKFALSE:season_number'] 
-  seEst<- summary(mod)$coefficients[,2]['ISCKFALSE:season_number'] 
+  pest<- summary(mod)$coefficients[,4]['ISCKFALSE:season_number']
+  seEst<- summary(mod)$coefficients[,2]['ISCKFALSE:season_number']
 
-  #Get the fitted values 
+  #Get the fitted values
   lsm<- lsmeans::lsmeans(mod, specs='season_number', by='ISCK', cov.reduce=FALSE)
   fitted<- as.data.frame(summary(lsm))
   colnames(fitted)[c(3:4)]<- c('blue', 'se')
@@ -108,21 +112,25 @@ controlGain<- function(filenm, label='', tunit='units', x1=NULL, y1=NULL, x2=NUL
   fitted[which(fitted$Population==FALSE),'Population']<- "Selected"
 
   #create the phenotypic trend plot
-  p1<- ggplot2::ggplot(data=dat, aes(x=season_number, y=blue, group=Population)) +
-  stat_summary(fun.data="mean_sdl",  fun.args = list(mult=1), 
-               geom="pointrange", aes(color=Population, shape=Population))+
-  scale_shape_manual(values=c(1, 0))+
-  theme_minimal()+
-  scale_color_manual(values=c('slategray4', 'darkorange'))+
-  geom_line(data=fitted, size=0.5, aes(linetype=Population, color=Population))+
-  scale_linetype_manual(values=c("longdash", "twodash"))+
-  labs(y = "Phenotypic value", x='Season number')+
-  ggtitle(paste("Phenotypic trends", label, sep=""))+ 
-  theme(legend.position="right",plot.title = element_text(hjust = 0.5))
+  p1<- ggplot(data=dat, aes(x=season_number, y=blue, group=Population)) +
+    geom_jitter(alpha=0.5, width=0.25, aes(color=Population, shape=Population))+
+    stat_summary(fun.data="mean_sdl",  fun.args = list(mult=1),
+                 geom="crossbar", width=0.4, size=0.7, aes(color=Population))+
+    scale_shape_manual(values=c(1, 0))+
+    theme_minimal()+
+    scale_color_manual(values=c('slategray4', 'darkorange'))+
+    geom_line(data=fitted, size=0.5, aes(linetype=Population,  color=Population))+
+    scale_linetype_manual(values=c("longdash", "twodash"))+
+    geom_ribbon(data=fitted, aes(ymin=lower.CL, ymax=upper.CL, fill=Population), alpha=0.2)+
+    scale_fill_manual(values=c('slategray4', 'darkorange'), name="fill")+
+    labs(y = paste("Phenotypic value in", tunit, sep=" "), x='Season number')+
+    ggtitle(paste("Phenotypic trends", label, sep=""))+
+    theme(legend.position="top",plot.title = element_text(hjust = 0.5))+
+    guides(fill = "none")
   if(!is.null(x1) & !is.null(y1))
     p1<- p1+ylim(x=x1, y=y1)
 
-  
+
   #fit model to get points for genetic value plot
   dat$season_number<- as.character(dat$season_number)
   mod2<- lm(blue~ Population+season_number+Population:season_number, data=dat)
@@ -130,36 +138,30 @@ controlGain<- function(filenm, label='', tunit='units', x1=NULL, y1=NULL, x2=NUL
   lsm<- lsmeans::contrast(lsm, method='trt.vs.ctrl')
   pts<- as.data.frame(summary(lsm))
   pts$season_number<- as.numeric(pts$season_number)+mnsea
-  
+
   #create the genetic trend plot
   #geom_point(color='slategray4', size=2, shape=0)+geom_line(color='black')+
   genEst$season_number<- genEst$season_number+mnsea
   pts$SE<- pts$SE*2
-  p2<- ggplot(genEst,aes(x=season_number,y=estimate)) + 
-    geom_point(shape=1, size=1.5,stroke=1.25, color='slategray4', data=pts, aes(x=season_number,y=estimate))+
+  p2<- ggplot(genEst,aes(x=season_number,y=estimate)) +
+    geom_point(shape=1, size=4.75,stroke=1, color='slategray4', data=pts, aes(x=season_number,y=estimate))+
     geom_line(color='slategray4', linetype='longdash')+
-    geom_errorbar(color='slategray4', data=pts, aes(ymin=estimate-SE, ymax=estimate+SE, width=0.0))+
+    geom_errorbar(color='slategray4', data=pts, size=1.15, aes(ymin=estimate-SE, ymax=estimate+SE, width=0.0))+
     theme_minimal()+
-    geom_ribbon(aes(ymin=estimate-SE, ymax=estimate+SE), alpha=0.2)+
-    labs(y = "Predicted average genetic value", x='Season number')+
-    ggtitle(paste("Predicted genetic trend", label, sep=""))+ 
+    geom_ribbon(aes(ymin=estimate-SE, ymax=estimate+SE), fill='slategray4', alpha=0.2)+
+    labs(y = paste("Predicted average genetic value in", tunit,sep=" "), x='Season number')+
+    ggtitle(paste("Predicted genetic trend", label, sep=""))+
     theme(plot.title = element_text(hjust = 0.5))
-  
-  #Add annotations
-  grob1 <- grobTree(textGrob(paste('Rate:', format(RateEst,digits=3), tunit, 'per season'), x=0.05,  y=0.92, hjust=0,
-                            gp=gpar(col="black", fontsize=13)))
-  grob2 <- grobTree(textGrob(paste('Baseline:', format(cfs[2], digits=3), tunit), x=0.05,  y=0.85, hjust=0,
-                             gp=gpar(col="black", fontsize=13)))
-  p2<- p2 + annotation_custom(grob1)+ annotation_custom(grob2)
-  
 
   if(!is.null(x2) & !is.null(y2))
     p2<- p2+ylim(x=x2, y=y2)
 
   #make results summary table
   rslts<- summary(mod)$coefficients
-  rslts<- data.frame(Parameter=c('Control phenotypic baseline',
-    'Genetic value baseline','Agronmic trend','Genetic trend'), rslts)
+  rslts<- data.frame(Parameter=c(paste('Control phenotypic baseline in', tunit, sep=" "),
+    paste('Genetic value baseline in', tunit, sep=" "),
+    paste('Agronomic trend,', tunit, "per season number", sep=" "),
+    paste('Genetic trend,', tunit, "per season number", sep=" ")), rslts)
   row.names(rslts)<- c(1:4)
   colnames(rslts)[3:5]<- c("Standard_Error", 't-value', 'p-value')
   rslts<- format(rslts, digits=2)
@@ -167,7 +169,7 @@ controlGain<- function(filenm, label='', tunit='units', x1=NULL, y1=NULL, x2=NUL
   #make anova table into a dataframe
   av<- as.data.frame(anova(mod))
   av<- data.frame(Parameter=c('Population',
-  'Season number','Season number within population','Residuals'), av)
+  'Season number','Season number x population','Residuals'), av)
   row.names(av)<- c(1:4)
   av<- format(av, digits=2)
   colnames(av)[c(2:6)]<- c('df', 'Sum of squares', 'Mean square', 'F-value', 'p-value')
@@ -175,7 +177,11 @@ controlGain<- function(filenm, label='', tunit='units', x1=NULL, y1=NULL, x2=NUL
   #show the r-squared of the model
   r2<- round(summary(mod)$r.sq,2)
   r2<- data.frame(`R squared`=r2)
-  
+
+  #edit text in anova table
+  av[nrow(av),'F-value']<- ""
+  av[nrow(av),'p-value']<- ""
+
   out<- list(p1=p1, p2=p2, rslts=rslts, av=av, r2=r2)
   return(out)
 }
