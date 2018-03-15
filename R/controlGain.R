@@ -112,7 +112,7 @@ controlGain<- function(dat, label='', tunit='units', x1=NULL, y1=NULL, x2=NULL, 
 
   #create the phenotypic trend plot
   p1<- ggplot(data=dat, aes(x=season_number, y=blue, group=Population)) +
-    geom_jitter(alpha=0.5, width=0.25, aes(color=Population, shape=Population))+
+    #geom_jitter(alpha=0.5, width=0.25, aes(color=Population, shape=Population))+
     stat_summary(fun.data="mean_sdl",  fun.args = list(mult=1),
                  geom="crossbar", width=0.4, size=0.7, aes(color=Population))+
     scale_shape_manual(values=c(1, 0))+
