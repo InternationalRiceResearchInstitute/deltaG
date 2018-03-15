@@ -15,7 +15,7 @@
 #' @export
 #'
 
-controlGain<- function(dat, label='', tunit='units', x1=NULL, y1=NULL, x2=NULL, y2=NULL){
+controlGain<- function(dat, label='', tunit='units'){
   #Check the column names
   if(any(colnames(dat)!= c("gid", "blue","se","season_number")))
     stop("data should contain gid, blue, se, and season_number columns")
@@ -119,8 +119,6 @@ controlGain<- function(dat, label='', tunit='units', x1=NULL, y1=NULL, x2=NULL, 
     ggtitle(paste("Phenotypic trends", label, sep=""))+
     theme(legend.position="top",plot.title = element_text(hjust = 0.5))+
     guides(fill = "none")
-  if(!is.null(x1) & !is.null(y1))
-    p1<- p1+ylim(x=x1, y=y1)
 
   #create the genetic trend plot
   #geom_point(color='slategray4', size=2, shape=0)+geom_line(color='black')+
@@ -135,8 +133,6 @@ controlGain<- function(dat, label='', tunit='units', x1=NULL, y1=NULL, x2=NULL, 
     labs(y = paste("Predicted average genetic value in", tunit,sep=" "), x='Season number')+
     ggtitle(paste("Predicted genetic trend", label, sep=""))+
     theme(plot.title = element_text(hjust = 0.5))
-  if(!is.null(x2) & !is.null(y2))
-    p2<- p2+ylim(x=x2, y=y2)
 
   #get the model information
   genTab<- as.data.frame(summary(mdG)$coefficients)
