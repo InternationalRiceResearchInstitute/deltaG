@@ -7,10 +7,6 @@
 #' @param filenm a csv file name string
 #' @param label a character with the plot label appendage
 #' @param tunit a character naming the units
-#' @param x1 lower range of the ylimit of the first plot
-#' @param y1 upper range of the ylimit of the first plot
-#' @param x2 lower range of the ylimit of the second plot
-#' @param y2 upper range of the ylimit of the second plot
 #' @return list of objects containing the results
 #' @export
 #'
