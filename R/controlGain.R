@@ -163,7 +163,7 @@ controlGain<- function(dat, label='', tunit='units',minNumb=10){
                    'Sum of squares', 'Mean square',
                    'F-value', 'p-value')
 
-  out<- list(p1=p1, p2=p2, rslts=rslts, av=av)
+  out<- list(p1=p1, p2=p2, rslts=rslts, av=av, Gmod=mdG, Gvals=pts)
   return(out)
 }
 
