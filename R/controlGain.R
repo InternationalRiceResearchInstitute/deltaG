@@ -2,16 +2,14 @@
 #'
 #' @import ggplot2
 #' @import grid
-#' @import lme4
 #' @import lsmeans
 #' @param filenm a csv file name string
 #' @param label a character with the plot label appendage
 #' @param tunit a character naming the units
 #' @return list of objects containing the results
 #' @export
-#'
 
-controlGain<- function(dat, label='', tunit='units'){
+controlGain<- function(dat, label='', tunit='units',minNumb=10){
   #Check the column names
   if(any(colnames(dat)!= c("gid", "blue","se","season_number")))
     stop("data should contain gid, blue, se, and season_number columns")
@@ -27,9 +25,9 @@ controlGain<- function(dat, label='', tunit='units'){
 
   #identify which are the potential checks
   tb<- table(dat$gid)
-  ckcand<- tb[which(tb>=10)] #checks should be in at least 10 years
+  ckcand<- tb[which(tb>=minNumb)] #checks should be in at least 10 years
   if(length(ckcand)==0)
-    stop("Error: There are no checks in the dataset that have been used for 10+ years")
+    stop("Error: There are no checks in the dataset that have been used for the minimum number of years")
   ckcand<- names(ckcand)
 
   #discard earlier seasons where the checks are not sufficient
@@ -45,12 +43,12 @@ controlGain<- function(dat, label='', tunit='units'){
   }
 
   if(start_num>ncol(octab2))
-    stop("Error: There needs to be at least common 3 checks used for the past 10 seasons (minimum)")
+    stop("Error: There needs to be at least common 3 checks used for the past 10 seasons by default")
   sea_sel<- colnames(octab2)[start_num:ncol(octab2)]
   nsea<- length(sea_sel)
 
-  if(nsea<10)
-    stop("Error: There needs to be at least common 3 checks used for the past 10 seasons (minimum)")
+  if(nsea<minNumb)
+    stop("Error: There needs to be at least common 3 checks used for the past 10 seasons by default")
 
   #select the seasons with sufficent checks for the analysis
   sea_sel<- as.numeric(sea_sel)
