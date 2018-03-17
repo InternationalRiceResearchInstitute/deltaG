@@ -147,7 +147,7 @@ controlGain<- function(dat, label='', tunit='units',minNumb=10,minNumbCk=3){
   rslts<- data.frame(Model=c(rep('P',4),
              rep('G',2)),cfnms, rbind(psTab, genTab))
   row.names(rslts)<- c(1:nrow(rslts))
-  colnames(rslts)<- c("Parameter", "Model", "Estimate", "Standard error",
+  colnames(rslts)<- c( "Model","Parameter", "Estimate", "Standard error",
     't-value', 'p-value')
   rslts<-format(rslts, digits=2)
 
