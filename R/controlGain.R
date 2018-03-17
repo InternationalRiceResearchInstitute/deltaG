@@ -3,13 +3,13 @@
 #' @import ggplot2
 #' @import grid
 #' @import lsmeans
-#' @param filenm a csv file name string
+#' @param dat a dataframe with the multi-year data
 #' @param label a character with the plot label appendage
 #' @param tunit a character naming the units
 #' @return list of objects containing the results
 #' @export
 
-controlGain<- function(dat, label='', tunit='units',minNumb=10){
+controlGain<- function(dat, label='', tunit='units',minNumb=10,minNumbCk=3){
   #Check the column names
   if(any(colnames(dat)!= c("gid", "blue","se","season_number")))
     stop("data should contain gid, blue, se, and season_number columns")
@@ -35,9 +35,9 @@ controlGain<- function(dat, label='', tunit='units',minNumb=10){
   octab<- reshape::cast(dck, gid~season_number, value='blue')
   octab2<- octab[,-1]
   tally<- apply(octab2, 2, function(x)length(na.omit(x)))
-  colrm<- which(tally<3)
+  colrm<- which(tally<minNumbCk)
   if(length(colrm)!=0){
-    start_num<- max(which(tally<3))+1
+    start_num<- max(which(tally<minNumbCk))+1
   }else{
     start_num<- 1
   }
@@ -63,6 +63,12 @@ controlGain<- function(dat, label='', tunit='units',minNumb=10){
   dat<- data.frame(dat, Population='Selected', stringsAsFactors = FALSE)
   dat[which(dat$gid %in% cks),'Population']<- 'Control'
   dat$Population<- factor(dat$Population, levels=c('Control', 'Selected'))
+
+  #keep earliest occurance of varieties only
+  dat<- dat[order(dat$season_number),] #order by season
+  selgids<- unique(dat$gid[which(dat$Population=='Selected')])
+  ixkp<- c(which(dat$Population=='Control'), match(selgids, dat$gid))
+  dat<- dat[ixkp, ]
 
   #start time at 0
   mnsea<- min(dat$season_number)
