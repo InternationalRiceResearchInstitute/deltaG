@@ -115,7 +115,7 @@ controlGain<- function(dat, label='', tunit='units',minNumb=10,minNumbCk=3){
     scale_linetype_manual(values=c("longdash", "twodash"))+
     geom_ribbon(data=fitted, aes(ymin=lower.CL, ymax=upper.CL, fill=Population), alpha=0.2)+
     scale_fill_manual(values=c('slategray4', 'darkorange'), name="fill")+
-    labs(y = paste("Phenotypic value in", tunit, sep=" "), x='year')+
+    labs(y = paste("Phenotypic value in", tunit, sep=" "), x='Year')+
     ggtitle(paste("Phenotypic trends", label, sep=""))+
     theme(legend.position="top",plot.title = element_text(hjust = 0.5))+
     guides(fill = "none")
@@ -130,7 +130,7 @@ controlGain<- function(dat, label='', tunit='units',minNumb=10,minNumbCk=3){
     geom_errorbar(color='slategray4', data=pts, size=1, aes(ymin=lsmean-SE, ymax=lsmean+SE, width=0.2))+
     theme_minimal()+
     geom_ribbon(data=genEst, aes(ymin=lsmean-SE, ymax=lsmean+SE), fill='slategray4', alpha=0.2)+
-    labs(y = paste("Predicted average genetic value in", tunit,sep=" "), x='year')+
+    labs(y = paste("Predicted average genetic value in", tunit,sep=" "), x='Year')+
     ggtitle(paste("Predicted genetic trend", label, sep=""))+
     theme(plot.title = element_text(hjust = 0.5))
 
