@@ -98,7 +98,7 @@ controlGain<- function(dat, label='', tunit='units',minNumb=10,minNumbCk=3){
   ptsPop$year<- as.numeric(as.character(ptsPop$year))
   
   wt<- 1/ptsPop$SE^2
-  mdPS<-lm(lsmean~year+Population+Population:year, data=ptsPop, weights=wt)
+  mdPS<-lm(emmean~year+Population+Population:year, data=ptsPop, weights=wt)
   lsm<- emmeans::emmeans(mdPS, specs='Population', by='year' ,cov.reduce=FALSE)
   fitted<- as.data.frame(summary(lsm))
   ptsPop$year<- ptsPop$year+mnsea
@@ -106,12 +106,12 @@ controlGain<- function(dat, label='', tunit='units',minNumb=10,minNumbCk=3){
 
   #create the phenotypic trend plot
   dat$year<- as.numeric(dat$year)+mnsea
-  p1<- ggplot(data=ptsPop, aes(x=year, y=lsmean, group=Population)) +
+  p1<- ggplot(data=ptsPop, aes(x=year, y=emmean, group=Population)) +
     theme_minimal()+
     geom_point(size=2,stroke=1,aes(shape=Population, color=Population))+
     scale_color_manual(values=c('slategray4', 'darkorange'))+
     scale_shape_manual(values=c(0, 1))+
-    geom_errorbar(size=1, aes(ymin=lsmean-SE, ymax=lsmean+SE, width=0.2, color=Population))+
+    geom_errorbar(size=1, aes(ymin=emmean-SE, ymax=emmean+SE, width=0.2, color=Population))+
     geom_line(data=fitted, size=0.5, aes(linetype=Population,  color=Population))+
     scale_linetype_manual(values=c("longdash", "twodash"))+
     geom_ribbon(data=fitted, aes(ymin=lower.CL, ymax=upper.CL, fill=Population), alpha=0.2)+
@@ -124,13 +124,13 @@ controlGain<- function(dat, label='', tunit='units',minNumb=10,minNumbCk=3){
   #create the genetic trend plot
   #geom_point(color='slategray4', size=2, shape=0)+geom_line(color='black')+
   genEst$year<- genEst$year+mnsea
-  colnames(pts)[3]<- 'lsmean'
-  p2<- ggplot(pts,aes(x=year, y=lsmean)) +
-    geom_point(shape=1, size=2,stroke=1, color='slategray4', data=pts, aes(x=year,y=lsmean))+
+  colnames(pts)[3]<- 'emmean'
+  p2<- ggplot(pts,aes(x=year, y=emmean)) +
+    geom_point(shape=1, size=2,stroke=1, color='slategray4', data=pts, aes(x=year,y=emmean))+
     geom_line(data=genEst, color='slategray4', linetype='longdash')+
-    geom_errorbar(color='slategray4', data=pts, size=1, aes(ymin=lsmean-SE, ymax=lsmean+SE, width=0.2))+
+    geom_errorbar(color='slategray4', data=pts, size=1, aes(ymin=emmean-SE, ymax=emmean+SE, width=0.2))+
     theme_minimal()+
-    geom_ribbon(data=genEst, aes(ymin=lsmean-SE, ymax=lsmean+SE), fill='slategray4', alpha=0.2)+
+    geom_ribbon(data=genEst, aes(ymin=emmean-SE, ymax=emmean+SE), fill='slategray4', alpha=0.2)+
     labs(y = paste("Predicted average genetic value in", tunit,sep=" "), x='Year')+
     ggtitle(paste("Predicted genetic trend", label, sep=""))+
     theme(plot.title = element_text(hjust = 0.5))
