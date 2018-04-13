@@ -1,0 +1,6 @@
+load("/Users/jrutkoski/Documents/GitHub/deltaG/data/advtrl.RData")
+ls()
+head(datin)
+colnames(datin)[4]
+colnames(datin)[4]<- 'year'
+save(datin, file="/Users/jrutkoski/Documents/GitHub/deltaG/data/advtrl.RData")

@@ -2,7 +2,7 @@
 #'
 #' @import ggplot2
 #' @import grid
-#' @import lsmeans
+#' @import emmeans
 #' @param dat a dataframe with the multi-year data
 #' @param label a character with the plot label appendage
 #' @param tunit a character naming the units
@@ -76,29 +76,30 @@ controlGain<- function(dat, label='', tunit='units',minNumb=10,minNumbCk=3){
 
   #fit model to get points for genetic value (stage 1)
   dat$year<- as.character(dat$year)
-  wtMod0<- 1/(dat$se/max(dat$se))
+  wtMod0<- 1/dat$se^2
   mod0<- lm(blue~ Population+year+Population:year, weights=wtMod0, data=dat)
-  lsm<- lsmeans::lsmeans(mod0, specs='Population', by='year', cov.reduce=FALSE)
-  lsm<- lsmeans::contrast(lsm, method='trt.vs.ctrl')
+  lsm<- emmeans::emmeans(mod0, specs='Population', by='year', cov.reduce=FALSE)
+  lsm<- emmeans::contrast(lsm, method='trt.vs.ctrl')
   pts<- as.data.frame(summary(lsm))
 
   #genetic trend model and fitted values (stage 2)
   pts$year<- as.numeric(as.character(pts$year))
-  wt<- 1/(pts$SE/max(pts$SE))
+  wt<- 1/pts$SE^2
   mdG<-lm(estimate~year, weights=wt, data=pts)
-  lsm<- lsmeans::lsmeans(mdG, specs='year', cov.reduce=FALSE)
+  lsm<- emmeans::emmeans(mdG, specs='year', cov.reduce=FALSE)
   genEst<- as.data.frame(summary(lsm))
   pts$year<-pts$year+mnsea #Gen-val tab
 
   #get the points for the other plots (stage 1)
-  lsm<- lsmeans::lsmeans(mod0, specs='year', by='Population', cov.reduce=FALSE)
+  lsm<- emmeans::emmeans(mod0, specs='year', by='Population', cov.reduce=FALSE)
   ptsPop<- as.data.frame(summary(lsm))
 
   #Phenotypic trends (stage 2)
   ptsPop$year<- as.numeric(as.character(ptsPop$year))
-  wt<- 1/(ptsPop$SE/max(ptsPop$SE))
+  
+  wt<- 1/ptsPop$SE^2
   mdPS<-lm(lsmean~year+Population+Population:year, data=ptsPop, weights=wt)
-  lsm<- lsmeans::lsmeans(mdPS, specs='Population', by='year' ,cov.reduce=FALSE)
+  lsm<- emmeans::emmeans(mdPS, specs='Population', by='year' ,cov.reduce=FALSE)
   fitted<- as.data.frame(summary(lsm))
   ptsPop$year<- ptsPop$year+mnsea
   fitted$year<- fitted$year+mnsea
