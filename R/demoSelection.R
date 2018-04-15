@@ -14,6 +14,8 @@ demoSelection<- function(pop0min= 0, pop0max= 7,
                         numparents= 20, ncycles= 2, 
                         cycledur=7, rnseed=99){
 
+set.seed(rnseed)
+    
 if(numparents>popsize){
   numparents=popsize
 }
