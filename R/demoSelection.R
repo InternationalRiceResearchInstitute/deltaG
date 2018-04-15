@@ -150,7 +150,8 @@ plt3<- ggplot(data=dfMns, aes(x=year, y=means, colour=gain)) +
   scale_colour_manual(name="Genetic gain",
                       values=c("orange", "grey50"))+
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-        panel.background = element_blank(), axis.line = element_line(colour = "black"))
+        panel.background = element_blank(), legend.key=element_blank(),
+        axis.line = element_line(colour = "black"))
 
 
 #variable table
