@@ -14,7 +14,10 @@ demoSelection<- function(pop0min= 0, pop0max= 7,
                         numparents= 20, ncycles= 2, 
                         cycledur=7){
 
-
+if(numparents>popsize){
+  numparents=popsize
+}
+  
 #variables
 pop0mean<- mean(pop0min:pop0max)
 popStd<- c(pop0max-pop0min)/8
