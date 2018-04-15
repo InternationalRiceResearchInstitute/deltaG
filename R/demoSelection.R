@@ -61,7 +61,7 @@ set.seed(seed=newseed)
   k<-0
   totR<- 0
   while(k<=ncycles){
-    ordvec<- cycleX[order(-cycleX[,1]),]
+    ordvec<- cycle1[order(-cycle1[,1]),]
     mnSel<- mean(ordvec[1:c(length(ordvec)*p)])
     mnTot<- mean(ordvec)
     S<- mnSel-mnTot
