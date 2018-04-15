@@ -138,11 +138,10 @@ tab<- data.frame(Variable=c('Percent selected', 'Selection intensty',
                            'Number of cycles', 'Expected genetic gain per cycle on average', 
                            'Genetic gain per cycle', 'Total response',
                            'Number of years elapsed', 'Genetic gain per year'), 
-                 Value=c(p*100, i, herit, selacc, varA, varP, pop0mean, ncycles, Rpergen_avg,
-                         totR/ncycles, totR, ncycles*cycledur, totR/(ncycles*cycledur)))
+                 Value=round(c(p*100, i, herit, selacc, varA, varP, pop0mean, ncycles, Rpergen_avg,
+                         totR/ncycles, totR, ncycles*cycledur, totR/(ncycles*cycledur)), 5))
 tab$Value<- round(tab$Value, 5)
 return(list(plt=plt, plt2=plt2, tab=tab, phenos=cycVecs))
 }
-
 
 
