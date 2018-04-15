@@ -122,7 +122,7 @@ tab<- data.frame(Varible=c('Percent selected', 'Selection intensty',
                            'Number of years elapsed', 'Expected genetic gain per year'), 
                  Value=c(p*100, i, herit, selacc, varA, varP, pop0mean, ncycles, 
                          Rpergen, totR, ncycles*cycledur, totR/(ncycles*cycledur)))
-tab<- format(tab, digits=3)
+tab$Value<- round(tab$Value, 4)
 return(list(plt=plt, plt2=plt2, tab=tab, phenos=cycVecs))
 }
 
