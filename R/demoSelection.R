@@ -60,6 +60,7 @@ set.seed(seed=newseed)
   cycle1<- cycle0
   k<-0
   totR<- 0
+  Rvec<- c()
   while(k<ncycles){
     ordvec<- cycle1[order(-cycle1[,1]),]
     mnSel<- mean(ordvec[1:c(length(ordvec)*p)])
@@ -67,12 +68,18 @@ set.seed(seed=newseed)
     S<- mnSel-mnTot
     Gain<- S*herit
     totR<- totR+Gain
+    Rvec<- append(Rvec, totR)
     k<- k+1
     newMean<- mean(cycle1[,1])+Gain
     cycle1 <- data.frame(Phenotypic_Value = 
                          rnorm(popsize, newMean, sqrt(varP)))
   }
-
+  
+meansVec<- c(pop0mean, Rvec+pop0mean)
+dfMns<- rbind(data.frame(means=meansVec, year=c(0:ncycles)*cycledur, gain='Observed'),
+        data.frame(means=(Rpergen_avg*c(0:ncycles))+pop0mean, year=c(0:ncycles)*cycledur, gain='Expected'))
+        
+        
 #population 1 mean
 pop1mean<- pop0mean+totR
 
@@ -94,7 +101,6 @@ xmx<- popMax+ rg *0.5
 
 #expected gain per year
 Rperyear<- totR/(ncycles*cycledur)
-
 
 #plot title
 plotTit<- paste("Gain from selection = ", round(totR,3), 
@@ -131,6 +137,22 @@ plt2<- ggplot2::ggplot(cycVecs, aes(x = reorder(id, Phenotypic_Value),
         panel.background = element_blank(), 
         axis.line = element_line(colour = "black"))
 
+rg<- max(dfMns$means)-min(dfMns$means)
+ymin<-min(dfMns$means)- rg*0.5
+ymx<- max(dfMns$means)+ rg *0.5
+plt3<- ggplot(data=dfMns, aes(x=year, y=means, colour=gain)) +
+  geom_line(lwd=1)+
+  geom_point()+
+  scale_y_continuous(limits = c(ymin, ymx))+
+  xlab("Year") +
+  ylab("Average phenotypic value") +
+  ggtitle("Average phenotypic values over cycles")+
+  scale_colour_manual(name="Genetic gain",
+                      values=c("orange", "grey50"))+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        panel.background = element_blank(), axis.line = element_line(colour = "black"))
+
+
 #variable table
 tab<- data.frame(Variable=c('Percent selected', 'Selection intensty',
                            'Heritability', 'Selection accuracy', 
@@ -140,8 +162,7 @@ tab<- data.frame(Variable=c('Percent selected', 'Selection intensty',
                            'Number of years elapsed', 'Genetic gain per year'), 
                  Value=round(c(p*100, i, herit, selacc, varA, varP, pop0mean, ncycles, Rpergen_avg,
                          totR/ncycles, totR, ncycles*cycledur, totR/(ncycles*cycledur)), 5))
-tab$Value<- round(tab$Value, 5)
-return(list(plt=plt, plt2=plt2, tab=tab, phenos=cycVecs))
+return(list(plt=plt, plt2=plt2, tab=tab, phenos=cycVecs, plt3=plt3))
 }
 
 
