@@ -88,9 +88,12 @@ xmx<- popMax+ rg *0.5
 #total gain
 totGain<- pop1mean-pop0mean
 
+
 #plot title
 plotTit<- paste("Expected gain from selection = ", round(totGain,3), 
-"after", ncycles*cycledur, 'years')
+"after", ncycles*cycledur, 'years,', 
+paste("(", round(((totGain/pop0mean) *100)/(ncycles*cycledur),2), 
+      " percent per year)", sep=""))
 
 #make plot
 plt<- ggplot2::ggplot(cycVecs, aes(Phenotypic_Value, fill = Population)) + 
