@@ -38,7 +38,7 @@ selacc<- sqrt(herit)
 varA<- herit*varP
 
 #Response per generation
-Rpergen<- i*sqrt(varA)*selacc
+Rpergen_avg<- i*sqrt(varA)*selacc
 
 #cycle zero vec
 set.seed(seed= rnseed)
@@ -72,9 +72,6 @@ set.seed(seed=newseed)
     cycle1 <- data.frame(Phenotypic_Value = 
                          rnorm(popsize, newMean, sqrt(varP)))
   }
-
-#expected average gain per generation
-Rpergen_avg<- Rpergen/ncycles
 
 #population 1 mean
 pop1mean<- pop0mean+totR
@@ -135,7 +132,7 @@ plt2<- ggplot2::ggplot(cycVecs, aes(x = reorder(id, Phenotypic_Value),
         axis.line = element_line(colour = "black"))
 
 #variable table
-tab<- data.frame(Varible=c('Percent selected', 'Selection intensty',
+tab<- data.frame(Variable=c('Percent selected', 'Selection intensty',
                            'Heritability', 'Selection accuracy', 
                            'Additive genetic variance', 'Phenotypic variance', 'Starting population mean',
                            'Number of cycles', 'Expected genetic gain per cycle on average', 
