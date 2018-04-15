@@ -65,7 +65,8 @@ if(ncycles==1){
 pop1mean<- pop0mean+totR
 
 #cycle 1
-set.seed(seed=NULL)
+set.seed(seed=rnseed*ncycles)
+
 cycle1 <- data.frame(Phenotypic_Value = 
                        rnorm(popsize, pop1mean, sqrt(varP)))
 
