@@ -11,7 +11,7 @@
 
 demoSelection<- function(pop0min= 0, pop0max= 7, 
                          herit= 0.1, popsize= 100, 
-                        numparents= 20, ncycles= 1, 
+                        numparents= 20, ncycles= 3, 
                         cycledur=7, rnseed=99){
 
 if(numparents>popsize){
@@ -142,8 +142,8 @@ tab<- data.frame(Varible=c('Percent selected', 'Selection intensty',
                            'Genetic gain per cycle', 'Total response',
                            'Number of years elapsed', 'Genetic gain per year'), 
                  Value=c(p*100, i, herit, selacc, varA, varP, pop0mean, ncycles, Rpergen_avg,
-                         Rpergen, totR, ncycles*cycledur, Rperyear))
-tab$Value<- round(tab$Value, 4)
+                         totR/ncycles, totR, ncycles*cycledur, Rperyear))
+tab$Value<- round(tab$Value, 5)
 return(list(plt=plt, plt2=plt2, tab=tab, phenos=cycVecs))
 }
 
