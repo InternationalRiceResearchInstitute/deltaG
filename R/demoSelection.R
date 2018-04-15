@@ -1,6 +1,5 @@
 #' demoSelection function to demonstrate phenotypic selection outcome
 #' @import ggplot2
-#' @param pop0mean mean of the starting popualtion
 #' @param pop0min population min
 #' @param pop0max population max
 #' @param herit heritability in the TPE
@@ -10,10 +9,14 @@
 #' @param cycledur time required to complete 1 cycle
 #' @export
 
-demoSelection<- function(pop0mean= 4, pop0min= 0,
-                        pop0max= 7, herit= 0.1, popsize= 100, 
-                        numparents= 20, ncycles= 2, cycledur=7){
+demoSelection<- function(pop0min= 0,pop0max= 7, 
+                         herit= 0.1, popsize= 100, 
+                        numparents= 20, ncycles= 2, 
+                        cycledur=7){
+
+
 #variables
+pop0mean<- mean(pop0min:pop0max)
 popStd<- c(pop0max-pop0min)/8
 
 #phenotypic variance
@@ -92,7 +95,7 @@ plt<- ggplot2::ggplot(cycVecs, aes(Phenotypic_Value, fill = Population)) +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
           panel.background = element_blank(), axis.line = element_line(colour = "black"))
 
-plt2<- ggplot(cycVecs, aes(x = reorder(id, Phenotypic_Value), 
+plt2<- ggplot2::ggplot(cycVecs, aes(x = reorder(id, Phenotypic_Value), 
                     y = Phenotypic_Value, fill = Population)) + 
   geom_bar(stat='identity', position='identity',
            color='black', size= 4/popsize)+  
@@ -106,10 +109,10 @@ plt2<- ggplot(cycVecs, aes(x = reorder(id, Phenotypic_Value),
 #variable table
 tab<- data.frame(Varible=c('Percent selected', 'Selection intensty',
                            'Heritability', 'Selection accuracy', 
-                           'Additive genetic variance', 'Phenotypic variance',
+                           'Additive genetic variance', 'Phenotypic variance', 'Starting population mean',
                            'Number of cycles', 'Expected genetic gain per cycle', 'Total response',
                            'Number of years elapsed', 'Expected genetic gain per year'), 
-                 Value=c(p*100, i, herit, selacc, varA, varP, ncycles, 
+                 Value=c(p*100, i, herit, selacc, varA, varP, pop0mean, ncycles, 
                          Rpergen, totR, ncycles*cycledur, totR/(ncycles*cycledur)))
 tab<- format(tab, digits=3)
 return(list(plt=plt, plt2=plt2, tab=tab, phenos=cycVecs))
