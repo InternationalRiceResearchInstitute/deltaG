@@ -76,8 +76,8 @@ set.seed(seed=newseed)
   }
   
 meansVec<- c(pop0mean, Rvec+pop0mean)
-dfMns<- rbind(data.frame(means=meansVec, year=c(0:ncycles)*cycledur, gain='On average'),
-        data.frame(means=(Rpergen_avg*c(0:ncycles))+pop0mean, year=c(0:ncycles)*cycledur, gain='In current program'))
+dfMns<- rbind(data.frame(means=meansVec, year=c(0:ncycles)*cycledur, gain='In current program'),
+        data.frame(means=(Rpergen_avg*c(0:ncycles))+pop0mean, year=c(0:ncycles)*cycledur, gain='On average'))
         
         
 #population 1 mean
