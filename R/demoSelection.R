@@ -112,7 +112,11 @@ plt2<- ggplot2::ggplot(cycVecs, aes(x = reorder(id, Phenotypic_Value),
   ylab("Phenotypic value") +
   ggtitle("Phenotypic values by population")+
   theme(axis.text.x=element_blank(),
-        axis.ticks.x=element_blank())
+        axis.ticks.x=element_blank(),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(), 
+        axis.line = element_line(colour = "black"))
 
 #variable table
 tab<- data.frame(Varible=c('Percent selected', 'Selection intensty',
