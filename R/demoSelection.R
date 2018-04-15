@@ -9,7 +9,7 @@
 #' @param cycledur time required to complete 1 cycle
 #' @export
 
-demoSelection<- function(pop0min= 0,pop0max= 7, 
+demoSelection<- function(pop0min= 0, pop0max= 7, 
                          herit= 0.1, popsize= 100, 
                         numparents= 20, ncycles= 2, 
                         cycledur=7){
@@ -82,7 +82,8 @@ xmx<- popMax+ rg *0.5
 totGain<- pop1mean-pop0mean
 
 #plot title
-plotTit<- paste("Expected gain from selection = ", round(totGain,3))
+plotTit<- paste("Expected gain from selection = ", round(totGain,3)), 
+"after", ncycles*cycledur, 'years')
 
 #make plot
 plt<- ggplot2::ggplot(cycVecs, aes(Phenotypic_Value, fill = Population)) + 
