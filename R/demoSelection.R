@@ -65,7 +65,7 @@ if(ncycles==1){
 pop1mean<- pop0mean+totR
 
 #cycle 1
-newseed<- rnseed*ncycles*123
+newseed<- rnseed*ncycles*herit*popsize*numparents*123
 set.seed(seed=newseed)
 
 cycle1 <- data.frame(Phenotypic_Value = 
