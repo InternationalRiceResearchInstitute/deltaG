@@ -14,8 +14,6 @@ demoSelection<- function(pop0min= 0, pop0max= 7,
                         numparents= 20, ncycles= 1, 
                         cycledur=7, rnseed=99){
 
-
-    
 if(numparents>popsize){
   numparents=popsize
 }
@@ -47,29 +45,39 @@ set.seed(seed= rnseed)
 cycle0 <- data.frame(Phenotypic_Value = 
                        rnorm(popsize, pop0mean, sqrt(varP)))
 
-#Make cycle 1 based on cycle 0
+
+#seed for after cycle 0
 if(ncycles==1){
-  #get response based on R= h2S
-  ordvec<- cycle0[order(-cycle0[,1]),]
-  mnSel<- mean(ordvec[1:c(length(ordvec)*p)])
-  mnTot<- mean(ordvec)
-  S<- mnSel-mnTot
-  totR<- S*herit
+  newseed<- rnseed*popsize*numparents*123
 }else{
-  #expected response per generation
-  #based on R= i h stdA
-  totR<- Rpergen*ncycles
+  newseed<- rnseed*ncycles*herit*popsize*numparents*123
 }
+
+set.seed(seed=newseed)
+
+#Make cycle 1 based on cycle 0
+  #get response based on R= h2S
+  cycle1<- cycle0
+  k<-0
+  totR<- 0
+  while(k<=ncycles){
+    ordvec<- cycleX[order(-cycleX[,1]),]
+    mnSel<- mean(ordvec[1:c(length(ordvec)*p)])
+    mnTot<- mean(ordvec)
+    S<- mnSel-mnTot
+    Gain<- S*herit
+    totR<- totR+Gain
+    k<- k+1
+    newMean<- mean(cycleX[,1])+Gain
+    cycle1 <- data.frame(Phenotypic_Value = 
+                         rnorm(popsize, newMean, sqrt(varP)))
+  }
+
+#expected average gain per generation
+Rpergen_avg<- Rpergen/ncycles
 
 #population 1 mean
 pop1mean<- pop0mean+totR
-
-#cycle 1
-newseed<- rnseed*ncycles*herit*popsize*numparents*123
-set.seed(seed=newseed)
-
-cycle1 <- data.frame(Phenotypic_Value = 
-                       rnorm(popsize, pop1mean, sqrt(varP)))
 
 #Now, combine your two dataframes into one.  First make a new column in each that will be a variable to identify where they came from later.
 cycle0$Population <- 'Before selection'
@@ -92,7 +100,7 @@ Rperyear<- totR/(ncycles*cycledur)
 
 
 #plot title
-plotTit<- paste("Expected gain from selection = ", round(totR,3), 
+plotTit<- paste("Gain from selection = ", round(totR,3), 
     "after", ncycles*cycledur, 'years', 
     paste("\n(", round(Rperyear/pop0mean *100, 2), 
     " percent, and", paste(" ", 
@@ -130,16 +138,14 @@ plt2<- ggplot2::ggplot(cycVecs, aes(x = reorder(id, Phenotypic_Value),
 tab<- data.frame(Varible=c('Percent selected', 'Selection intensty',
                            'Heritability', 'Selection accuracy', 
                            'Additive genetic variance', 'Phenotypic variance', 'Starting population mean',
-                           'Number of cycles', 'Expected genetic gain per cycle', 'Total response',
-                           'Number of years elapsed', 'Expected genetic gain per year'), 
-                 Value=c(p*100, i, herit, selacc, varA, varP, pop0mean, ncycles, 
+                           'Number of cycles', 'Expected genetic gain per cycle on average', 
+                           'Genetic gain per cycle', 'Total response',
+                           'Number of years elapsed', 'Genetic gain per year'), 
+                 Value=c(p*100, i, herit, selacc, varA, varP, pop0mean, ncycles, Rpergen_avg,
                          Rpergen, totR, ncycles*cycledur, Rperyear))
 tab$Value<- round(tab$Value, 4)
 return(list(plt=plt, plt2=plt2, tab=tab, phenos=cycVecs))
 }
-
-
-
 
 
 
