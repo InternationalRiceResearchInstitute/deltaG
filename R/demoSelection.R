@@ -68,7 +68,7 @@ set.seed(seed=newseed)
     Gain<- S*herit
     totR<- totR+Gain
     k<- k+1
-    newMean<- mean(cycleX[,1])+Gain
+    newMean<- mean(cycle1[,1])+Gain
     cycle1 <- data.frame(Phenotypic_Value = 
                          rnorm(popsize, newMean, sqrt(varP)))
   }
