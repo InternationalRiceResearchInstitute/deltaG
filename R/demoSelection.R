@@ -148,7 +148,7 @@ plt3<- ggplot(data=dfMns, aes(x=year, y=means, colour=gain)) +
   ylab("Average phenotypic value") +
   ggtitle("Average phenotypic values over time")+
   scale_colour_manual(name="Genetic gain",
-                      values=c("orange", "grey50"))+
+                      values=c("orange", "blue"))+
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
         panel.background = element_blank(), legend.key=element_blank(),
         axis.line = element_line(colour = "black"))
