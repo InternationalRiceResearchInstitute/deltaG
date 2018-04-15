@@ -138,8 +138,10 @@ plt2<- ggplot2::ggplot(cycVecs, aes(x = reorder(id, Phenotypic_Value),
         axis.line = element_line(colour = "black"))
 
 rg<- max(dfMns$means)-min(dfMns$means)
-ymin<-min(dfMns$means)- rg*0.5
-ymx<- max(dfMns$means)+ rg *0.5
+#ymin<-min(dfMns$means)- rg*0.5
+#ymx<- max(dfMns$means)+ rg *0.5
+ymin<-pop0min
+ymx<- pop0max
 plt3<- ggplot(data=dfMns, aes(x=year, y=means, colour=gain)) +
   geom_line(lwd=1)+
   geom_point()+
