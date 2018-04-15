@@ -85,15 +85,18 @@ rg<- popMax-popMin
 xmin<-popMin- rg *0.5
 xmx<- popMax+ rg *0.5
 
-#total gain
-totGain<- pop1mean-pop0mean
+#expected gain per year
+Rperyear<- totR/(ncycles*cycledur)
 
 
 #plot title
-plotTit<- paste("Expected gain from selection = ", round(totGain,3), 
-"after", ncycles*cycledur, 'years,', 
-paste("(", round(((totGain/pop0mean) *100)/(ncycles*cycledur),2), 
-      " percent per year)", sep=""))
+plotTit<- paste("Expected gain from selection = ", round(totR,3), 
+    "after", ncycles*cycledur, 'years', 
+    paste("\n(", round(Rperyear/pop0mean *100, 2), 
+    " percent, and", paste(" ", 
+    round(Rperyear/sqrt(varA),2), 
+    'genetic standard deviations per year)'), sep=""))
+
 
 #make plot
 plt<- ggplot2::ggplot(cycVecs, aes(Phenotypic_Value, fill = Population)) + 
@@ -128,7 +131,7 @@ tab<- data.frame(Varible=c('Percent selected', 'Selection intensty',
                            'Number of cycles', 'Expected genetic gain per cycle', 'Total response',
                            'Number of years elapsed', 'Expected genetic gain per year'), 
                  Value=c(p*100, i, herit, selacc, varA, varP, pop0mean, ncycles, 
-                         Rpergen, totR, ncycles*cycledur, totR/(ncycles*cycledur)))
+                         Rpergen, totR, ncycles*cycledur, Rperyear))
 tab$Value<- round(tab$Value, 4)
 return(list(plt=plt, plt2=plt2, tab=tab, phenos=cycVecs))
 }
