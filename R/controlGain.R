@@ -9,7 +9,10 @@
 #' @return list of objects containing the results
 #' @export
 
-controlGain<- function(dat, label='', tunit='units',minNumb=10,minNumbCk=3){
+controlGain<- function(dat, label='', tunit='units',minNumb=7,minNumbCk=1){
+  if('phenoValue' %in% colnames(dat)){
+    dat<- prepData(dat)
+  }
   #Check the column names
   if(any(colnames(dat)!= c("gid", "blue","se","year")))
     stop("data should contain gid, blue, se, and year columns")
@@ -96,7 +99,7 @@ controlGain<- function(dat, label='', tunit='units',minNumb=10,minNumbCk=3){
 
   #Phenotypic trends (stage 2)
   ptsPop$year<- as.numeric(as.character(ptsPop$year))
-  
+
   wt<- 1/ptsPop$SE^2
   mdPS<-lm(emmean~year+Population+Population:year, data=ptsPop, weights=wt)
   lsm<- emmeans::emmeans(mdPS, specs='Population', by='year' ,cov.reduce=FALSE)
