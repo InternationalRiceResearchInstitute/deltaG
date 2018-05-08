@@ -3,21 +3,21 @@
 #' @param pop0min population min
 #' @param pop0max population max
 #' @param herit heritability in the TPE
-#' @param popsize number of potential parents 
+#' @param popsize number of potential parents
 #' @param numparents number of parents selected
 #' @param ncycles number of cycles of selection
 #' @param cycledur time required to complete 1 cycle
 #' @export
 
-demoSelection<- function(pop0min= 0, pop0max= 7, 
-                         herit= 0.1, popsize= 100, 
-                        numparents= 20, ncycles= 3, 
+demoSelection<- function(pop0min= 0, pop0max= 7,
+                         herit= 0.1, popsize= 100,
+                        numparents= 20, ncycles= 3,
                         cycledur=7, rnseed=99){
 
 if(numparents>popsize){
   numparents=popsize
 }
-  
+
 #variables
 pop0mean<- mean(pop0min:pop0max)
 popStd<- c(pop0max-pop0min)/8
@@ -42,7 +42,7 @@ Rpergen_avg<- i*sqrt(varA)*selacc
 
 #cycle zero vec
 set.seed(seed= rnseed)
-cycle0 <- data.frame(Phenotypic_Value = 
+cycle0 <- data.frame(Phenotypic_Value =
                        rnorm(popsize, pop0mean, sqrt(varP)))
 
 
@@ -71,15 +71,15 @@ set.seed(seed=newseed)
     Rvec<- append(Rvec, totR)
     k<- k+1
     newMean<- mean(cycle1[,1])+Gain
-    cycle1 <- data.frame(Phenotypic_Value = 
+    cycle1 <- data.frame(Phenotypic_Value =
                          rnorm(popsize, newMean, sqrt(varP)))
   }
-  
+
 meansVec<- c(pop0mean, Rvec+pop0mean)
 dfMns<- rbind(data.frame(means=meansVec, year=c(0:ncycles)*cycledur, gain='In current program'),
         data.frame(means=(Rpergen_avg*c(0:ncycles))+pop0mean, year=c(0:ncycles)*cycledur, gain='On average'))
-        
-        
+
+
 #population 1 mean
 pop1mean<- pop0mean+totR
 
@@ -103,16 +103,16 @@ xmx<- popMax+ rg *0.5
 Rperyear<- totR/(ncycles*cycledur)
 
 #plot title
-plotTit<- paste("Gain from selection = ", round(totR,3), 
-    "after", ncycles*cycledur, 'years', 
-    paste("\n\n = ", round(Rperyear/pop0mean *100, 2), 
-    " percent = ", paste(" ", 
-    round(Rperyear/sqrt(varA),2), 
-    'genetic standard deviations per year\n'), sep=""))
+plotTit<- paste("Gain from selection = ", round(totR,3),
+    "after", ncycles*cycledur, 'years',
+    paste("\n\n = ", round(Rperyear/pop0mean *100, 2),
+    " percent \n\n = ", paste(" ",
+    round(Rperyear/sqrt(varA),2),
+    'genetic standard deviations\n'), sep=""))
 
 
 #make plot
-plt<- ggplot2::ggplot(cycVecs, aes(Phenotypic_Value, fill = Population)) + 
+plt<- ggplot2::ggplot(cycVecs, aes(Phenotypic_Value, fill = Population)) +
   geom_density(alpha = 0.3)+
   scale_x_continuous(limits = c(xmin, xmx))+
   xlab("Phenotypic value") +
@@ -122,19 +122,19 @@ plt<- ggplot2::ggplot(cycVecs, aes(Phenotypic_Value, fill = Population)) +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
           panel.background = element_blank(), axis.line = element_line(colour = "black"))
 
-plt2<- ggplot2::ggplot(cycVecs, aes(x = reorder(id, Phenotypic_Value), 
-                    y = Phenotypic_Value, fill = Population)) + 
+plt2<- ggplot2::ggplot(cycVecs, aes(x = reorder(id, Phenotypic_Value),
+                    y = Phenotypic_Value, fill = Population)) +
   geom_bar(stat='identity', position='identity',
-           color='black', size= 4/popsize)+  
+           color='black', size= 4/popsize)+
   scale_fill_manual(values = c("peachpuff","grey65"))+
   xlab("Individual") +
   ylab("Phenotypic value") +
   ggtitle("Phenotypic values by population")+
   theme(axis.text.x=element_blank(),
         axis.ticks.x=element_blank(),
-        panel.grid.major = element_blank(), 
+        panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
-        panel.background = element_blank(), 
+        panel.background = element_blank(),
         axis.line = element_line(colour = "black"))
 
 rg<- max(dfMns$means)-min(dfMns$means)
@@ -158,11 +158,11 @@ plt3<- ggplot(data=dfMns, aes(x=year, y=means, colour=gain)) +
 
 #variable table
 tab<- data.frame(Variable=c('Percent selected', 'Selection intensty',
-                           'Heritability', 'Selection accuracy', 
+                           'Heritability', 'Selection accuracy',
                            'Additive genetic variance', 'Phenotypic variance', 'Starting population mean',
-                           'Number of cycles', 'Expected genetic gain per cycle on average', 
+                           'Number of cycles', 'Expected genetic gain per cycle on average',
                            'Genetic gain per cycle', 'Total response',
-                           'Number of years elapsed', 'Genetic gain per year'), 
+                           'Number of years elapsed', 'Genetic gain per year'),
                  Value=round(c(p*100, i, herit, selacc, varA, varP, pop0mean, ncycles, Rpergen_avg,
                          totR/ncycles, totR, ncycles*cycledur, totR/(ncycles*cycledur)), 5))
 return(list(plt=plt, plt2=plt2, tab=tab, phenos=cycVecs, plt3=plt3))
