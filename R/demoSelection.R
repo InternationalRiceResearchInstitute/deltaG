@@ -104,9 +104,9 @@ Rperyear<- totR/(ncycles*cycledur)
 
 #plot title
 plotTit<- paste("Gain from selection after ", ncycles*cycledur, ' years',
-    paste("\n\n = ", round(round(totR,3), 2), 'genetic standard deviations'),
-    paste("\n\n = ", round(Rperyear/pop0mean *100, 2), 'percent'),
-    paste("\n\n = ", round(Rperyear/sqrt(varA),2), 'genetic standard deviations\n'), sep="")
+    paste(" = ", round(round(totR,3), 2), 'trait units,'),
+    paste(" = ", round(Rperyear/pop0mean *100, 2), 'percent,'),
+    paste(" = ", round(Rperyear/sqrt(varA),2), 'genetic standard deviations\n'), sep="")
 
 
 #make plot
