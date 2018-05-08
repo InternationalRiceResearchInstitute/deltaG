@@ -109,7 +109,7 @@ Caption<- paste(paste(round(round(totR,3), 2), 'trait units are gained after', n
 
 
 #plot title
-plotTit<- c("Gain from selection after ", ncycles*cycledur, ' years', sep="")
+plotTit<- paste("Gain from selection after ", ncycles*cycledur, ' years', sep="")
 
 
 #make plot
