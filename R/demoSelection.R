@@ -90,7 +90,7 @@ cycle1$Population <- 'After selection'
 #and combine into your new data frame vegLengths
 cycVecs <- rbind(cycle0, cycle1)
 cycVecs <- cycVecs[order(-cycVecs[,1]),]
-cycVecs<- data.frame(cycVecs, id=paste('id', row.names(cycVecs)))
+cycVecs<- data.frame(cycVecs, ranking=paste('id', c(1:nrow(cycVecs))))
 
 #get xlim
 popMin<- min(cycVecs[,1])
@@ -102,11 +102,14 @@ xmx<- popMax+ rg *0.5
 #expected gain per year
 Rperyear<- totR/(ncycles*cycledur)
 
+#caption
+Caption<- paste(paste(round(round(totR,3), 2), 'trait units are gained after', ncycles*cycledur, 'years. '),
+    paste("This is equal to", round(Rperyear/sqrt(varA),2), 'genetic standard deviations per year'),
+    paste(" or ", round(Rperyear/pop0mean *100, 2), ' percent per year in this scenario.', sep=""), sep="")
+
+
 #plot title
-plotTit<- paste("Gain from selection after ", ncycles*cycledur, ' years',
-    paste(" = ", round(round(totR,3), 2), 'trait units,'),
-    paste(" = ", round(Rperyear/pop0mean *100, 2), 'percent,'),
-    paste(" = ", round(Rperyear/sqrt(varA),2), 'genetic stds.\n'), sep="")
+plotTit<- c("Gain from selection after ", ncycles*cycledur, ' years', sep="")
 
 
 #make plot
@@ -163,7 +166,7 @@ tab<- data.frame(Variable=c('Percent selected', 'Selection intensty',
                            'Number of years elapsed', 'Genetic gain per year'),
                  Value=round(c(p*100, i, herit, selacc, varA, varP, pop0mean, ncycles, Rpergen_avg,
                          totR/ncycles, totR, ncycles*cycledur, totR/(ncycles*cycledur)), 5))
-return(list(plt=plt, plt2=plt2, tab=tab, phenos=cycVecs, plt3=plt3))
+return(list(plt=plt, plt2=plt2, tab=tab, phenos=cycVecs, plt3=plt3, Caption=Caption))
 }
 
 
