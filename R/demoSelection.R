@@ -90,7 +90,7 @@ cycle1$Population <- 'After selection'
 #and combine into your new data frame vegLengths
 cycVecs <- rbind(cycle0, cycle1)
 cycVecs <- cycVecs[order(-cycVecs[,1]),]
-cycVecs<- data.frame(cycVecs, ranking=paste('id', c(1:nrow(cycVecs))))
+cycVecs<- data.frame(cycVecs, ranking=c(1:nrow(cycVecs)))
 
 #get xlim
 popMin<- min(cycVecs[,1])
@@ -123,7 +123,7 @@ plt<- ggplot2::ggplot(cycVecs, aes(Phenotypic_Value, fill = Population)) +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
           panel.background = element_blank(), axis.line = element_line(colour = "black"))
 
-plt2<- ggplot2::ggplot(cycVecs, aes(x = reorder(id, Phenotypic_Value),
+plt2<- ggplot2::ggplot(cycVecs, aes(x = reorder(ranking, Phenotypic_Value),
                     y = Phenotypic_Value, fill = Population)) +
   geom_bar(stat='identity', position='identity',
            color='black', size= 4/popsize)+
@@ -142,7 +142,7 @@ rg<- max(dfMns$means)-min(dfMns$means)
 #ymin<-min(dfMns$means)- rg*0.5
 #ymx<- max(dfMns$means)+ rg *0.5
 ymin<-pop0min
-ymx<- pop0max
+ymx<- pop0max+totR
 plt3<- ggplot(data=dfMns, aes(x=year, y=means, colour=gain)) +
   geom_line(lwd=1)+
   geom_point()+
